@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #fefaff;
+  background-color: #050311;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 20%, rgba(145, 71, 255, 0.2), transparent 40%),
+    radial-gradient(circle at 80% 0%, rgba(236, 72, 153, 0.2), transparent 45%),
+    #050311;
+}
+
+#app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.hero {
+  padding: 1rem 0 0.5rem;
+}
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: #cdb4ff;
+  font-size: 0.75rem;
+}
+h1 {
+  margin: 0.3rem 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+.tagline {
+  color: #c2bdd8;
+  max-width: 480px;
+}
+
+.grid {
+  display: grid;
+  gap: 1.25rem;
+}
+.stats {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.highlights {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.lists {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.banner {
+  padding: 0.9rem 1.1rem;
+  border-radius: 16px;
+  font-weight: 500;
+}
+.banner.error {
+  background: rgba(248, 113, 113, 0.15);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+}
+.banner.info {
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+@media (max-width: 720px) {
+  #app {
+    padding: 1.5rem 1rem 3rem;
+  }
+}
