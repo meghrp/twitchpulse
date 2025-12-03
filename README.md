@@ -46,6 +46,17 @@ Day 1 goal: stand up a production-ready foundation for a Twitch chat analysis to
 
 5. Open the Vue dashboard (default `http://localhost:5173`), enter a Twitch channel, duration, and start the analysis.
 
+### Frontend → Backend wiring
+
+The frontend reads its API/WebSocket base URLs from Vite env variables. A production preset now lives in `frontend/.env.production`:
+
+```
+VITE_API_BASE=https://backend-wild-surf-268.fly.dev
+VITE_WS_BASE=wss://backend-wild-surf-268.fly.dev
+```
+
+`npm run build` / `npm run dev --mode production` will automatically use these defaults. For other environments just override them (e.g. create `.env.local` with your own backend URL).
+
 ## Performance / Load Testing
 
 Use the synthetic simulator to stress-test Redis + analyzer logic without hitting Twitch:
