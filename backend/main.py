@@ -18,6 +18,7 @@ from .emotes import EmoteService
 from .models import StartSessionRequest, StartSessionResponse, StopSessionRequest
 from .redis_manager import RedisManager
 from .twitch_client import TwitchChatClient
+from .seventv import SevenTVService
 
 logger = logging.getLogger("twitchpulse")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(asctime)s - %(message)s")
@@ -26,6 +27,7 @@ settings = get_settings()
 redis_manager = RedisManager()
 analyzer = MessageAnalyzer()
 emote_service = EmoteService()
+seventv_service = SevenTVService()
 
 app = FastAPI(title="TwitchPulse Chat Analyzer", default_response_class=ORJSONResponse)
 
@@ -62,12 +64,12 @@ async def health() -> Dict[str, str]:
 
 @app.on_event("startup")
 async def _startup() -> None:
-    await emote_service.warm_cache()
+    await asyncio.gather(emote_service.warm_cache(), seventv_service.warm_globals())
 
 
 @app.on_event("shutdown")
 async def _shutdown() -> None:
-    await emote_service.close()
+    await asyncio.gather(emote_service.close(), seventv_service.close())
 
 
 @app.get("/api/config")
@@ -91,6 +93,7 @@ async def start_session(payload: StartSessionRequest) -> StartSessionResponse:
     duration = payload.duration_seconds
 
     await redis_manager.initialize_session(session_id, payload.channel, duration)
+    asyncio.create_task(seventv_service.load_session(session_id, payload.channel))
 
     queue: asyncio.Queue = asyncio.Queue(maxsize=5_000)
     bot = TwitchChatClient(channel=payload.channel, message_queue=queue, sample_rate=payload.sample_rate)
@@ -172,9 +175,18 @@ async def _message_worker(session_id: str, queue: asyncio.Queue) -> None:
                     await redis_manager.increment_chatter(session_id, message.get("username", "anonymous"))
 
                     analysis = analyzer.analyze(content, tags)
-                    if analysis.emotes:
-                        await redis_manager.increment_emotes(session_id, analysis.emotes)
-                        await _cache_emote_images(session_id, analysis.emotes)
+                batched_emotes = list(analysis.emotes)
+                custom_emotes = seventv_service.match_message(session_id, content)
+                if custom_emotes:
+                    for emote in custom_emotes:
+                        batched_emotes.append((emote.key, emote.name))
+                if batched_emotes:
+                    await redis_manager.increment_emotes(session_id, batched_emotes)
+                if analysis.emotes:
+                    await _cache_emote_images(session_id, analysis.emotes)
+                if custom_emotes:
+                    for emote in custom_emotes:
+                        await redis_manager.set_emote_image(session_id, emote.key, emote.image_url)
                     await redis_manager.update_sentiment(session_id, analysis.sentiment_label, analysis.sentiment_score)
 
                     timestamp = int(message.get("timestamp") or datetime.now(timezone.utc).timestamp())
@@ -221,6 +233,7 @@ async def _stop_session(session_id: str, *, from_timer: bool) -> None:
     status = "complete" if from_timer else "stopped"
     await redis_manager.close_session(session_id, status=status)
     await redis_manager.append_timeline(session_id, int(datetime.now(timezone.utc).timestamp()))
+    await seventv_service.drop_session(session_id)
 
 
 async def _run_bot(session_id: str, bot: TwitchChatClient) -> None:

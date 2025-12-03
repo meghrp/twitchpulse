@@ -8,6 +8,7 @@ Day 1 goal: stand up a production-ready foundation for a Twitch chat analysis to
 - **Frontend**: Vue 3 + Vite + modern CSS (dark, Twitch-inspired theme)
 - **Data Layer**: Redis (sorted sets, hashes, rolling timelines)
 - **Transport**: WebSockets for live stat updates
+- **Emotes**: Twitch native emotes + global & channel-specific 7TV emotes
 
 ## Prerequisites
 
