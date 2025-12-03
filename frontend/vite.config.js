@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   const backendWs = backendHttp.replace('http', 'ws')
 
   return {
-    plugins: [vue()],
+  plugins: [vue()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'src'),

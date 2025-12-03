@@ -175,11 +175,11 @@ watch(
 <template>
   <main>
     <header class="hero">
-      <div>
+  <div>
         <p class="eyebrow">TwitchPulse</p>
         <h1>Track the vibe of any Twitch chat in seconds.</h1>
         <p class="tagline">Real-time stats, hype meters, and the hottest emotes — built for viewers.</p>
-      </div>
+  </div>
     </header>
 
     <ChannelInput

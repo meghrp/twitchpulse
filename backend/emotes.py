@@ -58,7 +58,9 @@ class EmoteService:
                 "client_secret": settings.twitch_client_secret,
                 "grant_type": "client_credentials",
             }
-            response = await self._client.post("https://id.twitch.tv/oauth2/token", data=payload)
+            response = await self._client.post(
+                "https://id.twitch.tv/oauth2/token", data=payload
+            )
             response.raise_for_status()
             data = response.json()
             self._app_token = data["access_token"]
@@ -72,7 +74,9 @@ class EmoteService:
             "Client-ID": settings.twitch_client_id,
             "Authorization": f"Bearer {self._app_token}",
         }
-        response = await self._client.get("https://api.twitch.tv/helix/chat/emotes/global", headers=headers)
+        response = await self._client.get(
+            "https://api.twitch.tv/helix/chat/emotes/global", headers=headers
+        )
         response.raise_for_status()
         payload = response.json()
         for entry in payload.get("data", []):
@@ -99,7 +103,9 @@ class EmoteService:
             "Authorization": f"Bearer {self._app_token}",
         }
         response = await self._client.get(
-            "https://api.twitch.tv/helix/users", params={"login": login}, headers=headers
+            "https://api.twitch.tv/helix/users",
+            params={"login": login},
+            headers=headers,
         )
         response.raise_for_status()
         data = response.json().get("data", [])
@@ -109,7 +115,9 @@ class EmoteService:
         self._twitch_user_cache[login] = user_id
         return user_id
 
-    async def get_emote_metadata(self, emote_id: str, fallback_name: Optional[str] = None) -> Dict[str, str]:
+    async def get_emote_metadata(
+        self, emote_id: str, fallback_name: Optional[str] = None
+    ) -> Dict[str, str]:
         if not emote_id:
             return {"id": "", "name": fallback_name or "", "imageUrl": ""}
 
@@ -186,7 +194,9 @@ class EmoteService:
                 logger.warning("Unable to load 7TV global emotes: %s", exc)
                 self._seven_tv_global = {}
 
-    async def _get_seven_tv_channel_emotes(self, twitch_user_id: str) -> Dict[str, Dict[str, str]]:
+    async def _get_seven_tv_channel_emotes(
+        self, twitch_user_id: str
+    ) -> Dict[str, Dict[str, str]]:
         if twitch_user_id in self._seven_tv_channel:
             return self._seven_tv_channel[twitch_user_id]
         async with self._seven_tv_lock:
@@ -203,11 +213,15 @@ class EmoteService:
                 self._seven_tv_channel[twitch_user_id] = normalized
                 return normalized
             except httpx.HTTPError as exc:
-                logger.warning("Unable to load 7TV emotes for %s: %s", twitch_user_id, exc)
+                logger.warning(
+                    "Unable to load 7TV emotes for %s: %s", twitch_user_id, exc
+                )
                 self._seven_tv_channel[twitch_user_id] = {}
                 return {}
 
-    def _normalize_seven_tv_emotes(self, payload: Dict[str, List[Dict[str, str]]]) -> Dict[str, Dict[str, str]]:
+    def _normalize_seven_tv_emotes(
+        self, payload: Dict[str, List[Dict[str, str]]]
+    ) -> Dict[str, Dict[str, str]]:
         emotes = payload.get("emotes") or []
         result: Dict[str, Dict[str, str]] = {}
         for entry in emotes:
@@ -226,7 +240,9 @@ class EmoteService:
 
 
 def _cdn_url(emote_id: str, theme: str = "dark", scale: str = "2.0") -> str:
-    return f"https://static-cdn.jtvnw.net/emoticons/v2/{emote_id}/default/{theme}/{scale}"
+    return (
+        f"https://static-cdn.jtvnw.net/emoticons/v2/{emote_id}/default/{theme}/{scale}"
+    )
 
 
 def _seven_tv_cdn_url(entry: Dict[str, str], size: str = "2x") -> str:
@@ -245,4 +261,3 @@ def _seven_tv_cdn_url(entry: Dict[str, str], size: str = "2x") -> str:
             base_url = f"https://{base_url.lstrip('/')}"
         return f"{base_url}/{size}.{target_format}"
     return f"https://cdn.7tv.app/emote/{entry.get('id')}/{size}.webp"
-

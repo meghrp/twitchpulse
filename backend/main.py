@@ -187,7 +187,9 @@ async def _message_worker(session_id: str, queue: asyncio.Queue) -> None:
                     tags = message.get("tags") or {}
                     state = active_sessions.get(session_id)
                     custom_lookup = (
-                        state.seven_tv_lookup.by_name if state and state.seven_tv_lookup else None
+                        state.seven_tv_lookup.by_name
+                        if state and state.seven_tv_lookup
+                        else None
                     )
 
                     await redis_manager.increment_message_count(session_id)
@@ -195,7 +197,9 @@ async def _message_worker(session_id: str, queue: asyncio.Queue) -> None:
                         session_id, message.get("username", "anonymous")
                     )
 
-                    analysis = analyzer.analyze(content, tags, custom_emotes=custom_lookup)
+                    analysis = analyzer.analyze(
+                        content, tags, custom_emotes=custom_lookup
+                    )
                     if analysis.emotes:
                         await redis_manager.increment_emotes(
                             session_id, analysis.emotes
