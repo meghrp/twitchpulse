@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
@@ -48,11 +48,20 @@ class MessageAnalyzer:
     def __init__(self) -> None:
         self._sentiment = SentimentIntensityAnalyzer()
 
-    def analyze(self, content: str, tags: Dict[str, str] | None = None) -> AnalysisResult:
+    def analyze(
+        self,
+        content: str,
+        tags: Dict[str, str] | None = None,
+        custom_emotes: Optional[Dict[str, Dict[str, str]]] = None,
+    ) -> AnalysisResult:
         tags = tags or {}
         sentiment_label, sentiment_score = self._score_sentiment(content)
         emotes = self._extract_emotes(content, tags)
-        return AnalysisResult(sentiment_label=sentiment_label, sentiment_score=sentiment_score, emotes=emotes)
+        if custom_emotes:
+            emotes.extend(self._extract_custom_emotes(content, custom_emotes))
+        return AnalysisResult(
+            sentiment_label=sentiment_label, sentiment_score=sentiment_score, emotes=emotes
+        )
 
     def _score_sentiment(self, content: str) -> Tuple[str, float]:
         text = content.strip()
@@ -108,4 +117,14 @@ class MessageAnalyzer:
                     emotes.append((canon, canon))
 
         return emotes
+
+    def _extract_custom_emotes(
+        self, content: str, custom_emotes: Dict[str, Dict[str, str]]
+    ) -> List[Tuple[str, str]]:
+        hits: List[Tuple[str, str]] = []
+        for token in re.findall(r"[A-Za-z0-9_]+", content):
+            meta = custom_emotes.get(token.lower())
+            if meta:
+                hits.append((f"7tv:{meta['id']}", meta["name"]))
+        return hits
 

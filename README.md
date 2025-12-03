@@ -8,7 +8,7 @@ Day 1 goal: stand up a production-ready foundation for a Twitch chat analysis to
 - **Frontend**: Vue 3 + Vite + modern CSS (dark, Twitch-inspired theme)
 - **Data Layer**: Redis (sorted sets, hashes, rolling timelines)
 - **Transport**: WebSockets for live stat updates
-- **Emotes**: Twitch native emotes + global & channel-specific 7TV emotes
+- **Emotes**: Twitch global/channel sets + 7TV global + per-channel sets
 
 ## Prerequisites
 
@@ -57,6 +57,12 @@ VITE_WS_BASE=wss://backend-wild-surf-268.fly.dev
 ```
 
 `npm run build` / `npm run dev --mode production` will automatically use these defaults. For other environments just override them (e.g. create `.env.local` with your own backend URL).
+
+### 7TV Emote Support
+
+- On session start the backend resolves the Twitch channel ID (via Helix) and fetches both the global 7TV set and the channel's 7TV emote set.
+- 7TV emote names are detected directly from chat text, counted, and visualized alongside native Twitch emotes.
+- Metadata (image URLs) is cached per session so the dashboard can render Twitch + 7TV artwork without additional setup.
 
 ## Performance / Load Testing
 
